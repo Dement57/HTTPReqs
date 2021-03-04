@@ -1,6 +1,6 @@
 const listElem = document.querySelector(".posts");
 const postTemplate = document.getElementById("single-post");
-const fetchBtn = document.getElementById("available-posts");
+const fetchBtn = document.querySelector("#available-posts button");
 const addBtn = document.querySelector("#new-post form");
 const postList = document.querySelector("ul");
 
@@ -14,12 +14,19 @@ function sendHttpReq(method, url, body) {
 
     console.log("REQUEST >>> ", method, url, body);
 
+    xhr.onerror = (ev) =>{
+      reject(new Error('STATUS ' + xhr.status + JSON.stringify(ev)))
+    }
+
     xhr.onload = function () {
-      // console.log('BEFORE', typeof xhr.response, xhr.response);
-      const dataRes = xhr.response;
-      // const dataRes = JSON.parse(xhr.response).filter((elem, index) => index < 5);
-      console.log("RESPONSE >>> ", dataRes);
-      resolve(dataRes);
+      if (200 <= xhr.status && xhr.status< 300 ){
+        // const dataRes = xhr.response;
+        const dataRes = JSON.parse(xhr.response).filter((elem, index) => index < 10);
+        console.log("RESPONSE >>> ", dataRes);
+        resolve(dataRes);
+      } else {
+        reject(new Error('ERROR HERE!'))
+      }
     };
   });
   return promise;
@@ -30,13 +37,14 @@ function postData(data) {
     const postElem = document.importNode(postTemplate.content, true);
     postElem.querySelector("h2").textContent = post.title;
     postElem.querySelector("p").textContent = post.body;
+    postElem.querySelector("li").id = post.id;
     listElem.append(postElem);
   }
 }
 
 // let sendReq = xhr.send;
 async function fetchPosts() {
-  const responseData = await sendHttpReq("GET", "https://jsonplaceholder.typicode.com/posts");
+  const responseData = await sendHttpReq("GET", "https://jsonplaceholder.typicode.com/postsw");
   postData(responseData);
 }
 
@@ -56,9 +64,15 @@ async function addNewPost(titleValue, contentValue) {
   }
 }
 
-async function deletePost() {
-  const responseData = await sendHttpReq("DELETE", "https://jsonplaceholder.typicode.com/posts/1");
+async function deletePost(id) {
+  const responseData = await sendHttpReq("DELETE", `https://jsonplaceholder.typicode.com/posts/${id}`);
   console.log(responseData);
+}
+
+async function updateUi(id) {
+  const listElem = document.getElementById(`${id}`);
+  console.log('ELEM FOR DELETING', listElem);
+  listElem.remove();
 }
 
 addBtn.addEventListener("submit", (event) => {
@@ -72,17 +86,17 @@ addBtn.addEventListener("submit", (event) => {
 
 fetchBtn.addEventListener("click", async (event) => {
   event.preventDefault();
-  await fetchPosts();
-  const deleteBtn = document.querySelector(".post-item button");
-  console.log(deleteBtn);
-  deleteBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    deletePost();
-  });
+  event.stopPropagation();
+  fetchPosts();
 });
 
 
-postList.addEventListener('click', event => {
-  
+postList.addEventListener('click', async event => {
+  if (event.target.tagName === "BUTTON"){
+    event.stopPropagation();
+    const postId = await event.target.closest('li').id;
+    console.log('Clicked on the button!', postId)
+    await deletePost(postId)
+    updateUi(postId)
+  }
 })
