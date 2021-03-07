@@ -4,58 +4,59 @@ const fetchBtn = document.querySelector("#available-posts button");
 const form = document.querySelector("#new-post form");
 const postList = document.querySelector("ul");
 
-function sendHttpReq(method, url, body) {
-  // const promise = new Promise((resolve, reject) => {
-    // const xhr = new XMLHttpRequest();
-    // console.log(body);
-    // xhr.open(method, url);
-    // xhr.send(JSON.stringify(body));
-    // xhr.responseType = "json";
+// function sendHttpReq(method, url, body) {
+//   // const promise = new Promise((resolve, reject) => {
+//     // const xhr = new XMLHttpRequest();
+//     // console.log(body);
+//     // xhr.open(method, url);
+//     // xhr.send(JSON.stringify(body));
+//     // xhr.responseType = "json";
 
-    // console.log("REQUEST >>> ", method, url, body);
+//     // console.log("REQUEST >>> ", method, url, body);
 
-    // xhr.onerror = (ev) =>{
-    //   reject(new Error('STATUS ' + xhr.status + JSON.stringify(ev)))
-    // }
+//     // xhr.onerror = (ev) =>{
+//     //   reject(new Error('STATUS ' + xhr.status + JSON.stringify(ev)))
+//     // }
 
-    // xhr.onload = function () {
-    //   if (200 <= xhr.status && xhr.status< 300 ){
-    //     // const dataRes = xhr.response;
-    //     const dataRes = JSON.parse(xhr.response).filter((elem, index) => index < 10);
-    //     console.log("RESPONSE >>> ", dataRes);
-    //     resolve(dataRes);
-    //   } else {
-    //     reject(new Error('ERROR HERE!'))
-    //   }
-    // };
-  // });
-  // return promise;
-  // console.log(type)
-  // if(type)
-  return fetch(url,{
-    method:method,
-    body:body,
-    // headers:{
-    //   'Content-Type':"multipart/form-data"
-    // }
-  }).then(response => {
-    if (response.status >= 200 && response.status < 300){
-      return response.json();
-    } else {
-      return response.json().then((errData)=>{
-        // console.log(body);
-        throw new Error(`Something went wrong - server-side! ${JSON.stringify(errData)}`)
-      })
-    }
-  }).catch((err)=>{
-    console.log(err);
-    throw new Error('Something went wrong!')
-  });
+//     // xhr.onload = function () {
+//     //   if (200 <= xhr.status && xhr.status< 300 ){
+//     //     // const dataRes = xhr.response;
+//     //     const dataRes = JSON.parse(xhr.response).filter((elem, index) => index < 10);
+//     //     console.log("RESPONSE >>> ", dataRes);
+//     //     resolve(dataRes);
+//     //   } else {
+//     //     reject(new Error('ERROR HERE!'))
+//     //   }
+//     // };
+//   // });
+//   // return promise;
+//   // console.log(type)
+//   // if(type)
+//   return fetch(url,{
+//     method:method,
+//     body:body,
+//     // headers:{
+//     //   'Content-Type':"multipart/form-data"
+//     // }
+//   }).then(response => {
+//     if (response.status >= 200 && response.status < 300){
+//       return response.json();
+//     } else {
+//       return response.json().then((errData)=>{
+//         // console.log(body);
+//         throw new Error(`Something went wrong - server-side! ${JSON.stringify(errData)}`)
+//       })
+//     }
+//   }).catch((err)=>{
+//     console.log(err);
+//     throw new Error('Something went wrong!')
+//   });
 
-}
+// }
 
 function postData(data) {
-  for (const post of data) {
+  const responseBody = data.data;
+  for (const post of responseBody) {
     const postElem = document.importNode(postTemplate.content, true);
     postElem.querySelector("h2").textContent = post.title;
     postElem.querySelector("p").textContent = post.body;
@@ -67,10 +68,12 @@ function postData(data) {
 // let sendReq = xhr.send;
 async function fetchPosts() {
   try {
-    const responseData = await sendHttpReq("GET", "https://jsonplaceholder.typicode.com/posts");
+    const responseData = await axios.get("https://jsonplaceholder.typicode.com/posts");
+    console.log(responseData)
+    // console.log(typeof responseData)
     postData(responseData);
   } catch (error) {
-    console.log('IN CATCH BLOCK: ', error.message)
+    console.log('IN CATCH BLOCK: ', error.message, error.response)
   }
 }
 
@@ -91,16 +94,20 @@ async function addNewPost(titleValue, contentValue) {
   if (!titleValue || !contentValue) {
     console.log("Enter title and content!!!");
   } else {
-    const responseData = await sendHttpReq("POST", "https://jsonplaceholder.typicode.com/posts", formData);
+    const responseData = await axios.post("https://jsonplaceholder.typicode.com/posts", body);
     postData;
     console.log(responseData);
   }
 }
 
 async function deletePost(id) {
-  const responseData = await sendHttpReq("DELETE", `https://jsonplaceholder.typicode.com/posts/${id}`);
+  const responseData = await axios.delete(`https://jsonplaceholder.typicode.com/posts/${id}`);
   console.log(responseData);
 }
+
+// axioos.defau
+
+
 
 async function updateUi(id) {
   const listElem = document.getElementById(`${id}`);
