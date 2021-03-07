@@ -1,7 +1,7 @@
 const listElem = document.querySelector(".posts");
 const postTemplate = document.getElementById("single-post");
 const fetchBtn = document.querySelector("#available-posts button");
-const addBtn = document.querySelector("#new-post form");
+const form = document.querySelector("#new-post form");
 const postList = document.querySelector("ul");
 
 function sendHttpReq(method, url, body) {
@@ -30,12 +30,14 @@ function sendHttpReq(method, url, body) {
     // };
   // });
   // return promise;
+  // console.log(type)
+  // if(type)
   return fetch(url,{
     method:method,
-    body:JSON.stringify(body),
-    headers:{
-      'Content-Type':"application/json"
-    }
+    body:body,
+    // headers:{
+    //   'Content-Type':"multipart/form-data"
+    // }
   }).then(response => {
     if (response.status >= 200 && response.status < 300){
       return response.json();
@@ -78,11 +80,18 @@ async function addNewPost(titleValue, contentValue) {
     title: titleValue,
     body: contentValue,
     userId: userId,
-  };
+  }
+
+  const formData= new FormData(form);
+  // formData.append('title', titleValue);
+  // formData.append('body', contentValue);
+  formData.append('userId', userId);
+  // formData.append('newFile', 'file','../newFile');
+
   if (!titleValue || !contentValue) {
     console.log("Enter title and content!!!");
   } else {
-    const responseData = await sendHttpReq("POST", "https://jsonplaceholder.typicode.com/posts", body);
+    const responseData = await sendHttpReq("POST", "https://jsonplaceholder.typicode.com/posts", formData);
     postData;
     console.log(responseData);
   }
@@ -98,8 +107,7 @@ async function updateUi(id) {
   console.log('ELEM FOR DELETING', listElem);
   listElem.remove();
 }
-
-addBtn.addEventListener("submit", (event) => {
+form.addEventListener("submit", (event) => {
   event.preventDefault();
   console.log(event.currentTarget);
   const titleInputValue = event.currentTarget.querySelector("#title").value;
